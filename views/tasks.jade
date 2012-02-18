@@ -12,28 +12,42 @@ section(class="main-content")
             th Category
             th Date
             th
+            th Assigned To
+            th
              each item in tasklist
                 tr
                     td #{item.name}
                     td #{item.category} 
                     td #{item.date} 
                     td
+                        img(src="http://graph.facebook.com/#{item.assignedTo}/picture")
+                    td #{item.assignedToName}
+                    td
                         form(action="/complete", method="post")
                             input(type="hidden", name="item[RowKey]", value="#{item.RowKey}")
                             input(type="submit", value="Complete")
     hr
-    form(action="/newitem", method="post")
-        table    
-            tr
-                td Task Name: 
-                td 
-                    input(name="item[name]", type="textbox")
-            tr
-                td Task Category: 
-                td 
-                    input(name="item[category]", type="textbox")
-            tr
-                td Task Date: 
-                td 
-                    input(name="item[date]", type="textbox")
-        input(type="submit", value="Add item")
+    -if(everyauth.loggedIn)
+        form(action="/newitem", method="post")
+            table    
+                tr
+                    td Task Name: 
+                    td 
+                        input(name="item[name]", type="textbox")
+                tr
+                    td Task Category: 
+                    td 
+                        input(name="item[category]", type="textbox")
+                tr
+                    td Task Date: 
+                    td 
+                        input(name="item[date]", type="textbox")
+                tr
+                    td Assigned To:
+                    td
+                        select(name="item[assignedTo]")
+                            each friend in friends
+                                option(value="#{friend.id}") #{friend.name}
+            input(type="submit", value="Add item")
+    -else
+        p Please log in in order to add tasks
