@@ -13,7 +13,8 @@ section(class="main-content")
             th Date
             th
             th Assigned To
-            th
+            -if(everyauth.loggedIn)
+                th
              each item in tasklist
                 tr
                     td #{item.name}
@@ -22,10 +23,11 @@ section(class="main-content")
                     td
                         img(src="http://graph.facebook.com/#{item.assignedTo}/picture")
                     td #{item.assignedToName}
-                    td
-                        form(action="/complete", method="post")
-                            input(type="hidden", name="item[RowKey]", value="#{item.RowKey}")
-                            input(type="submit", value="Complete")
+                    -if(everyauth.loggedIn)
+                        td
+                            form(action="/complete", method="post")
+                                input(type="hidden", name="item[RowKey]", value="#{item.RowKey}")
+                                input(type="submit", value="Complete")
     hr
     -if(everyauth.loggedIn)
         form(action="/newitem", method="post")
@@ -50,4 +52,4 @@ section(class="main-content")
                                 option(value="#{friend.id}") #{friend.name}
             input(type="submit", value="Add item")
     -else
-        p Please log in in order to add tasks
+        h3 Please log in in order to add/complete tasks
