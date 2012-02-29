@@ -12,10 +12,10 @@ module.exports = function(app) {
     
     // tasks page
     var tasks = new Tasks(
-	azure.createTableService(
-	    nconf.get('azure:storageAccount'), 
-	    nconf.get('azure:storageAccessKey')),
-	new Fb(nconf.get('facebook:applicationId'), nconf.get('facebook:applicationSecret'))
+    	azure.createTableService(
+    	    nconf.get('azure:storageAccount'), 
+    	    nconf.get('azure:storageAccessKey')),
+    	new Fb(nconf.get('facebook:applicationId'), nconf.get('facebook:applicationSecret'))
     );
     app.get('/', tasks.showItems.bind(tasks));
     app.post('/newitem', tasks.newItem.bind(tasks));

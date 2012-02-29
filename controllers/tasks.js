@@ -11,11 +11,11 @@ function Tasks(storageClient, fbClient) {
     this.storageClient = storageClient;
     storageClient.createTableIfNotExists(tableName, 
         function tableCreated(error){
-	    if(error){
-	        throw error;
-	    }
+		    if(error){
+		        throw error;
+		    }
         });
-        this.fbClient = fbClient;
+    this.fbClient = fbClient;
 };
 
 Tasks.prototype = {
@@ -47,75 +47,75 @@ Facebook. The Graph API returned this: " + result.error.type + " " +
 		    });
 	    });
     },
+
     showItems: function (req, res) {
-	var self = this;
+		var self = this;
+		async.parallel({
+		    friends: function getFriends(callback){
+				if(req.loggedIn){
+				    self.getFacebookFriends(
+						req.session.auth.facebook.accessToken, 
+						callback);
+				} else {
+				    callback(null, []);
+				}
+		    },
+		    tasks: function getTasks(callback){
+				var query = azure.TableQuery
+				    .select()
+				    .from(tableName)
+				    .where('completed eq ?', 'false');
+				
+				self.storageClient.queryEntities(query, callback);
+		    }
+		}, function gotFriendsAndTasks(error, results){
+		    if(error){
+				throw error;
+		    }
 
-	async.parallel({
-	    friends: function getFriends(callback){
-		if(req.loggedIn){
-		    self.getFacebookFriends(
-			req.session.auth.facebook.accessToken, 
-			callback);
-		} else {
-		    callback(null, []);
-		}
-	    },
-	    tasks: function getTasks(callback){
-		var query = azure.TableQuery
-		    .select()
-		    .from(tableName)
-		    .where('completed eq ?', 'false');
-		
-		self.storageClient.queryEntities(query, callback);
-	    }
-	}, function gotFriendsAndTasks(error, results){
-	    if(error){
-		throw error;
-	    }
-
-	    res.render('tasks', { 
-		title: 'Tasks.  ',
-		tasklist: results.tasks[0] || [],
-		friends: results.friends || []
-	    });	    
-	});
+		    res.render('tasks', {
+				title: 'Tasks.  ',
+				tasklist: results.tasks[0] || [],
+				friends: results.friends || []
+		    });	    
+		});
     },
     
     newItem: function (req, res) {
-	var self = this;
+		var self = this;
 	    
         var item = req.body.item;
         item.RowKey = uuid();
         item.PartitionKey = partitionKey;
         item.completed = false;
         
-	// Fish out the friend name from Facebook
-	if(req.loggedIn){
-	    self.getFacebookFriends(
-		req.session.auth.facebook.accessToken, 
-		function gotFacebookFriends(error, friends){
-		    if(error){
-			throw error;
-		    }
-		    
-		    async.detect(friends, 
-			function friendIterator(friend, callback){
-		            callback(friend.id === item.assignedTo);
-			}, matchingFriendFound);
-		});
-	}
+		// Fish out the friend name from Facebook
+		if(req.loggedIn){
+		    self.getFacebookFriends(
+				req.session.auth.facebook.accessToken, 
+				function gotFacebookFriends(error, friends){
+			    	if(error){
+						throw error;
+			    	}
+			    
+			    	async.detect(friends, 
+						function friendIterator(friend, callback){
+			            	callback(friend.id === item.assignedTo);
+						}, matchingFriendFound);
+				});
+		}
 
-	function matchingFriendFound(result){
-	    item.assignedToName = result.name;
-	    
-	    self.storageClient.insertEntity(tableName, item, 
-	        function entityInserted(error) {
-		    if(error){	
-			throw error;
-		    }
-		    self.showItems(req, res);
-		});
-	}
+		function matchingFriendFound(result){
+		    item.assignedToName = result.name;
+		    
+		    self.storageClient.insertEntity(tableName, item, 
+		        function entityInserted(error) {
+			    	if(error){	
+						throw error;
+			    	}
+			    	self.showItems(req, res);
+			});
+		}
     },
     complete: function(req, res){
         var self = this;
@@ -135,7 +135,6 @@ Facebook. The Graph API returned this: " + result.error.type + " " +
                         self.showItems(req, res);
                     });           
             });
-
 
     }
 };
