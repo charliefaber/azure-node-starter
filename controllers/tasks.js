@@ -21,31 +21,32 @@ function Tasks(storageClient, fbClient) {
 Tasks.prototype = {
     
     getFacebookFriends: function(token, callback){
-	this.fbClient.getSessionByAccessToken(token)(
-	    function gotSession(session){
-		if(!session){
-		    callback(new Error("Could not establish Facebook session"));
-		    return;
-		}
-		
-		session.graphCall('/me/friends', {})(
-		    function gotFriends(result) {
-			if(result.error){
-			    callback(new Error("Could not get friends from \
-Facebook. The Graph API returned this: " + result.error.type + " " + 
-					       result.error.message));
-			    return;
-			}
+		this.fbClient.getSessionByAccessToken(token)(
+		    function gotSession(session){
+				if(!session){
+				    callback(new Error("Could not establish Facebook session"));
+				    return;
+				}
+				
+				session.graphCall('/me/friends', {})(
+				    function gotFriends(result) {
+						if(result.error){
+						    callback(new Error("Could not get friends from \
+						    	Facebook. The Graph API returned this: " + 
+						    	result.error.type + " " + 
+						    	result.error.message));
+						    return;
+						}
 
-			result.data.sort(function nameComparer(a, b){
-			    if(a.name == b.name) return 0
-			    else if (a.name > b.name) return 1
-			    else if (a.name < b. name) return -1
-			});
-		    
-			callback(null, result.data);
+						result.data.sort(function nameComparer(a, b){
+						    if(a.name == b.name) return 0
+						    else if (a.name > b.name) return 1
+						    else if (a.name < b. name) return -1
+						});
+				    
+						callback(null, result.data);
+				    });
 		    });
-	    });
     },
 
     showItems: function (req, res) {

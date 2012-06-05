@@ -1,7 +1,9 @@
 {
   "azure": {
     "storageAccount": "{your Azure storage account ID}",
-    "storageAccessKey": "{your Azure storage account access key}"
+    "storageAccessKey": "{your Azure storage account access key}",
+    "serviceBusNamespace": "{your Azure Service Bus namespace}",
+    "serviceBusAccessKey": "{your Azure Service Bus access key}"
   },
    "facebook": {
     "applicationId": "{your Facebook app ID}",

@@ -7,7 +7,7 @@
     , "async": "0.1.15"
     , "everyauth": "0.2.29"
     , "facebook-client": "1.6.0"
-    , "azure": "0.5.1"
+    , "azure": "0.5.3"
     , "nconf": "0.5.1"
     , "express": "2.5.0"
     , "jade": ">= 0.18.0"
