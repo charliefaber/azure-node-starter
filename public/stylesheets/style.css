@@ -138,9 +138,6 @@ footer {
   padding: 2px 3px;
   text-decoration: none;
 }
-#login a.button {
-  background: none;
-}
 #login a.username {
   background: none;
   margin-left: 0px;
@@ -149,7 +146,7 @@ footer {
 #login ul {
   margin: 0;
 }
-#login ul li {
+#login li {
   display: inline;
   list-style: none;
 }
