@@ -94,72 +94,72 @@ everyauth.
 * this section provides basic in-memory username and password authentication
 **/
 
-// everyauth
-//   .password
-//     .loginWith('email')
-//     .getLoginPath('/login')
-//     .postLoginPath('/login')
-//     .loginView('account/login')
-//     .loginLocals(function(req, res, done) {
-//         setTimeout(function() {
-//             done(null, {
-//                 title: 'login.  '
-//             });
-//         }, 200);
-//     })
-//     .authenticate(function(login, password) {
-//         var errors = [];
-//         if(!login) errors.push('Missing login');
-//         if(!password) errors.push('Missing password');
-//         if(errors.length) return errors;
-//         var user = usersByLogin[login];
-//         if(!user) return ['Login failed'];
-//         if(user.password !== password) return ['Login failed'];
-//         return user;
-//     })
-//     .getRegisterPath('/register')
-//     .postRegisterPath('/register')
-//     .registerView('account/register')
-//     .registerLocals(function(req, res, done) {
-//         setTimeout(function() {
-//             done(null, {
-//                 title: 'Register.  ',
-//                 recaptcha_form: (new Recaptcha(nconf.get('recaptcha:publicKey'), nconf.get('recaptcha:privateKey'))).toHTML()
-//             });
-//         }, 200);
-//     })
-//     .extractExtraRegistrationParams(function(req) {
-//         return {
-//             confirmPassword: req.body.confirmPassword,
-//             data: {
-//                 remoteip: req.connection.remoteAddress,
-//                 challenge: req.body.recaptcha_challenge_field,
-//                 response: req.body.recaptcha_response_field
-//             }
-//         }
-//     })
-//     .validateRegistration(function(newUserAttrs, errors) {
-//         var login = newUserAttrs.login;
-//         var confirmPassword = newUserAttrs.confirmPassword;
-//         if(!confirmPassword) errors.push('Missing password confirmation')
-//         if(newUserAttrs.password != confirmPassword) errors.push('Passwords must match');
-//         if(usersByLogin[login]) errors.push('Login already taken');
+everyauth
+  .password
+    .loginWith('email')
+    .getLoginPath('/login')
+    .postLoginPath('/login')
+    .loginView('account/login')
+    .loginLocals(function(req, res, done) {
+        setTimeout(function() {
+            done(null, {
+                title: 'login.  '
+            });
+        }, 200);
+    })
+    .authenticate(function(login, password) {
+        var errors = [];
+        if(!login) errors.push('Missing login');
+        if(!password) errors.push('Missing password');
+        if(errors.length) return errors;
+        var user = usersByLogin[login];
+        if(!user) return ['Login failed'];
+        if(user.password !== password) return ['Login failed'];
+        return user;
+    })
+    .getRegisterPath('/register')
+    .postRegisterPath('/register')
+    .registerView('account/register')
+    .registerLocals(function(req, res, done) {
+        setTimeout(function() {
+            done(null, {
+                title: 'Register.  ',
+                recaptcha_form: (new Recaptcha(nconf.get('recaptcha:publicKey'), nconf.get('recaptcha:privateKey'))).toHTML()
+            });
+        }, 200);
+    })
+    .extractExtraRegistrationParams(function(req) {
+        return {
+            confirmPassword: req.body.confirmPassword,
+            data: {
+                remoteip: req.connection.remoteAddress,
+                challenge: req.body.recaptcha_challenge_field,
+                response: req.body.recaptcha_response_field
+            }
+        }
+    })
+    .validateRegistration(function(newUserAttrs, errors) {
+        var login = newUserAttrs.login;
+        var confirmPassword = newUserAttrs.confirmPassword;
+        if(!confirmPassword) errors.push('Missing password confirmation')
+        if(newUserAttrs.password != confirmPassword) errors.push('Passwords must match');
+        if(usersByLogin[login]) errors.push('Login already taken');
 
-//         // validate the recaptcha 
-//         var recaptcha = new Recaptcha(nconf.get('recaptcha:publicKey'), nconf.get('recaptcha:privateKey'), newUserAttrs.data);
-//         recaptcha.verify(function(success, error_code) {
-//             if(!success) {
-//                 errors.push('Invalid recaptcha - please try again');
-//             }
-//         });
-//         return errors;
-//     })
-//     .registerUser(function(newUserAttrs) {
-//         var login = newUserAttrs[this.loginKey()];
-//         return usersByLogin[login] = addUser(newUserAttrs);
-//     })
-//     .loginSuccessRedirect('/')
-//     .registerSuccessRedirect('/');
+        // validate the recaptcha 
+        var recaptcha = new Recaptcha(nconf.get('recaptcha:publicKey'), nconf.get('recaptcha:privateKey'), newUserAttrs.data);
+        recaptcha.verify(function(success, error_code) {
+            if(!success) {
+                errors.push('Invalid recaptcha - please try again');
+            }
+        });
+        return errors;
+    })
+    .registerUser(function(newUserAttrs) {
+        var login = newUserAttrs[this.loginKey()];
+        return usersByLogin[login] = addUser(newUserAttrs);
+    })
+    .loginSuccessRedirect('/')
+    .registerSuccessRedirect('/');
 
 // add a user to the in memory store of users.  If you were looking to use a persistent store, this
 // would be the place to start
@@ -247,17 +247,19 @@ var serviceBusClient = azure.createServiceBusService(
 
 io.configure(function () { 
   io.set("transports", ["xhr-polling"]); 
-  io.set("polling duration", 100); 
+  io.set("polling duration", 50); 
+
+  serviceBusCreateSubscriptions();
 });
 
-serviceBusCreateSubscriptions();
+
 
 function setUpSocketIo(){
-  io.sockets.on('connection', function (socket) {
 
-    serviceBusReceive(socket, 'message');
-    serviceBusReceive(socket, 'announcement');
-    
+  serviceBusReceive('message');
+  serviceBusReceive('announcement');
+
+  io.sockets.on('connection', function (socket) {
     socket.on('setname', function(name) {
       socket.set('name', name, function() {
         serviceBusSend({announcement: name + ' connected'}, 'announcement');
@@ -278,16 +280,19 @@ function setUpSocketIo(){
 
 function serviceBusCreateSubscriptions()
 {
+  console.log('About to create subscriptions');
   serviceBusClient.createSubscription('message', 
     serviceBusSubscription, function messageSubscriptionCreated(error) {
       if (error) {
         throw error;
       } else {
+        console.log('Message subscription exists');
         serviceBusClient.createSubscription('announcement', serviceBusSubscription,
           function announcementSubscriptionCreated(error){
             if(error){
               throw error;
             } else {
+              console.log('Announcement subscription exists');
               setUpSocketIo();
             }
           });
@@ -297,10 +302,12 @@ function serviceBusCreateSubscriptions()
 
 function serviceBusSend(message, topic){
   var msg = JSON.stringify(message);
+  console.log('About to queue message to ServiceBus: ' + msg);
   serviceBusClient.sendTopicMessage(topic, 
     msg, 
     function messageSent(error) {
       if (error) {
+        console.log(error);
         throw error;
       } else {
         console.log('Message queued up to Service Bus: ' + msg);
@@ -308,14 +315,15 @@ function serviceBusSend(message, topic){
     });
 }
 
-function serviceBusReceive(socket, topic){
+function serviceBusReceive(topic){
+  console.log('About to receive message');
   serviceBusClient.receiveSubscriptionMessage(topic,
     serviceBusSubscription, {timeoutIntervalInS: 5}, 
     function messageReceived(error, message) {
       if (error) {
         if(error === 'No messages to receive'){
           console.log('Resetting Service Bus receive');
-          serviceBusReceive(socket, topic);
+          serviceBusReceive(topic);
         } else {
           console.log(error);
           throw error;
@@ -323,7 +331,8 @@ function serviceBusReceive(socket, topic){
       } else {
         console.log('Received Service Bus message ' + 
           JSON.stringify(message));
-        socket.broadcast.emit(topic, JSON.parse(message.body));
+        io.sockets.emit(topic, JSON.parse(message.body));
+        serviceBusReceive(topic);
       }
     });
 }
