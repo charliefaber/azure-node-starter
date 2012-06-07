@@ -16,5 +16,8 @@
     "recaptcha": {
         "publicKey": "{ your recaptcha public key }",
         "privateKey": "{ your recaptcha private key }",
+    },
+    "mongo": {
+        "connection": "{ your Mongo connection string}"
     }
 }

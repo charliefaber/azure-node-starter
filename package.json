@@ -25,7 +25,8 @@
     "recaptcha": ">=1.1.0",
     "async": "0.1.15",
     "facebook-client": "1.6.0",
-    "azure": "0.5.3"
+    "azure": "0.5.3",
+    "mongoose": "2.6.5"
   },
   "noAnalyze": true,
   "license": "Apache",

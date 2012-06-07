@@ -1,20 +1,13 @@
-var azure = require('azure'),
-    uuid = require('node-uuid'),
+var uuid = require('node-uuid'),
     everyauth = require('everyauth'),
     async = require('async'),
-    tableName = 'tasks',
-    partitionKey = 'partition1';
+    mongoose = require('mongoose'),
+    task = require('../models/task.js');
 
 module.exports = Tasks;
 
-function Tasks(storageClient, fbClient) {
-    this.storageClient = storageClient;
-    storageClient.createTableIfNotExists(tableName, 
-        function tableCreated(error){
-		    if(error){
-		        throw error;
-		    }
-        });
+function Tasks(mongoConnection, fbClient) {
+     mongoose.connect(mongoConnection);
     this.fbClient = fbClient;
 };
 
@@ -62,12 +55,7 @@ Tasks.prototype = {
 				}
 		    },
 		    tasks: function getTasks(callback){
-				var query = azure.TableQuery
-				    .select()
-				    .from(tableName)
-				    .where('completed eq ?', 'false');
-				
-				self.storageClient.queryEntities(query, callback);
+		    	task.find({completed: false}, callback);
 		    }
 		}, function gotFriendsAndTasks(error, results){
 		    if(error){
@@ -76,7 +64,7 @@ Tasks.prototype = {
 
 		    res.render('tasks', {
 				title: 'Tasks.  ',
-				tasklist: results.tasks[0] || [],
+				tasklist: results.tasks || [],
 				friends: results.friends || []
 		    });	    
 		});
@@ -86,9 +74,11 @@ Tasks.prototype = {
 		var self = this;
 	    
         var item = req.body.item;
-        item.RowKey = uuid();
-        item.PartitionKey = partitionKey;
-        item.completed = false;
+        var newTask = new task();
+        newTask.name = item.name;
+        newTask.category = item.category;
+        newTask.date = item.date;
+        newTask.assignedTo = item.assignedTo;
         
 		// Fish out the friend name from Facebook
 		if(req.loggedIn){
@@ -107,35 +97,27 @@ Tasks.prototype = {
 		}
 
 		function matchingFriendFound(result){
-		    item.assignedToName = result.name;
-		    
-		    self.storageClient.insertEntity(tableName, item, 
-		        function entityInserted(error) {
-			    	if(error){	
-						throw error;
-			    	}
-			    	self.showItems(req, res);
-			});
+		    newTask.assignedToName = result.name;
+		    newTask.save(function savedTask(error){
+		    	if(error){	
+					throw error;
+			    }
+				self.showItems(req, res);
+    		});
 		}
     },
     complete: function(req, res){
         var self = this;
 
-        self.storageClient.queryEntity(tableName, partitionKey, 
-            req.body.item.RowKey, function entityQueried(error, entity){
-                if(error){
-                    throw error;
-                }
-                entity.completed = true;
+        console.log(req.body.item.id);
 
-                self.storageClient.updateEntity(tableName, entity, 
-                    function entityUpdated(error){
-                        if(error){
-                            throw error;
-                        }
-                        self.showItems(req, res);
-                    });           
-            });
-
+        task.update(
+        	{_id: req.body.item.id},
+        	{ completed: true}, function updatedTask(error) {
+          		if(error){
+                	throw error;
+				}
+                self.showItems(req, res);
+        });
     }
 };
