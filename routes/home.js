@@ -15,11 +15,15 @@ module.exports = function(app) {
     	azure.createTableService(
     	    nconf.get('azure:storageAccount'), 
     	    nconf.get('azure:storageAccessKey')),
+        azure.createBlobService(
+            nconf.get('azure:storageAccount'), 
+            nconf.get('azure:storageAccessKey')),
     	new Fb(nconf.get('facebook:applicationId'), nconf.get('facebook:applicationSecret'))
     );
     app.get('/', tasks.showItems.bind(tasks));
     app.post('/newitem', tasks.newItem.bind(tasks));
     app.post('/complete', tasks.complete.bind(tasks));
+    app.post('/uploadfile', tasks.uploadFile.bind(tasks));
 
     // chat area
     app.get('/chat', function(req, res) {

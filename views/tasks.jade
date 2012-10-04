@@ -13,6 +13,7 @@ section(class="main-content")
             th Date
             th
             th Assigned To
+            th Attachment
             -if(everyauth.loggedIn)
                 th
              each item in tasklist
@@ -23,6 +24,17 @@ section(class="main-content")
                     td
                         img(src="http://graph.facebook.com/#{item.assignedTo}/picture")
                     td #{item.assignedToName}
+                    td 
+                        -if(item.attachment)
+                            a(href="#{item.attachment}") Download
+                        -else
+                            -if(everyauth.loggedIn)
+                                form(action="/uploadfile", method="post", enctype="multipart/form-data")
+                                    input(type="hidden", name="RowKey", value="#{item.RowKey}")
+                                    input(type="file", name="file")
+                                    input(type="submit", value="Upload")
+                            -else
+                                p None
                     -if(everyauth.loggedIn)
                         td
                             form(action="/complete", method="post")
