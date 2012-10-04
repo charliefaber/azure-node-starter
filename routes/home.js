@@ -11,7 +11,7 @@ module.exports = function(app) {
     
     // tasks page
     var tasks = new Tasks(
-        nconf.get('mongo:connection'),
+        nconf.get('azure:sqlConnectionString'),
         new Fb(nconf.get('facebook:applicationId'), nconf.get('facebook:applicationSecret'))
     );
     app.get('/', tasks.showItems.bind(tasks));

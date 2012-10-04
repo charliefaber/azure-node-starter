@@ -3,7 +3,8 @@
         "storageAccount": "{your Azure storage account ID}",
         "storageAccessKey": "{your Azure storage account access key}",
         "serviceBusNamespace": "{your Azure Service Bus namespace}",
-        "serviceBusAccessKey": "{your Azure Service Bus access key}"
+        "serviceBusAccessKey": "{your Azure Service Bus access key}",
+        "sqlConnectionString" : "{your Azure Databases connection string}"
     },
     "facebook": {
         "applicationId": "{your Facebook app ID}",

@@ -1,13 +1,12 @@
 var uuid = require('node-uuid'),
     everyauth = require('everyauth'),
     async = require('async'),
-    mongoose = require('mongoose'),
-    task = require('../models/task.js');
+	sql = require('node-sqlserver');
 
 module.exports = Tasks;
 
-function Tasks(mongoConnection, fbClient) {
-     mongoose.connect(mongoConnection);
+function Tasks(conn, fbClient) {
+    this.conn = conn;
     this.fbClient = fbClient;
 };
 
@@ -55,7 +54,8 @@ Tasks.prototype = {
 				}
 		    },
 		    tasks: function getTasks(callback){
-		    	task.find({completed: false}, callback);
+				var select = "select * from tasks where completed = 0";
+		    	sql.query(self.conn, select, callback);
 		    }
 		}, function gotFriendsAndTasks(error, results){
 		    if(error){
@@ -74,12 +74,7 @@ Tasks.prototype = {
 		var self = this;
 	    
         var item = req.body.item;
-        var newTask = new task();
-        newTask.name = item.name;
-        newTask.category = item.category;
-        newTask.date = item.date;
-        newTask.assignedTo = item.assignedTo;
-        
+  
 		// Fish out the friend name from Facebook
 		if(req.loggedIn){
 		    self.getFacebookFriends(
@@ -97,27 +92,26 @@ Tasks.prototype = {
 		}
 
 		function matchingFriendFound(result){
-		    newTask.assignedToName = result.name;
-		    newTask.save(function savedTask(error){
-		    	if(error){	
-					throw error;
-			    }
-				self.showItems(req, res);
-    		});
+			var insert = "insert into tasks (name, category, date, assignedTo, assignedToName, completed) values (?, ?, GETDATE(), ?, ?, 0)";
+			sql.query(self.conn, insert, 
+				[item.name, item.category, item.assignedTo, result.name], 
+				function inserted(error) {
+					if(error){
+						throw error;
+					}
+					self.showItems(req, res);
+				});
 		}
     },
     complete: function(req, res){
         var self = this;
-
-        console.log(req.body.item.id);
-
-        task.update(
-        	{_id: req.body.item.id},
-        	{ completed: true}, function updatedTask(error) {
-          		if(error){
-                	throw error;
-				}
-                self.showItems(req, res);
+        var update = "update tasks set completed = 1 where id in (" + 
+        	req.body.item.id + ")";
+        sql.query(self.conn, update, function(error) {
+            if(error) {
+                throw error;
+            }
+            self.showItems(req, res);
         });
     }
 };
