@@ -13,20 +13,20 @@
     "boilerplate",
     "express"
   ],
-  "dependencies" : {
-    "node-uuid": ">= 1.3.3",
-    "everyauth": ">= 0.2.29",
-    "nconf": ">= 0.5.1",
-    "express": ">= 2.5.0",
-    "jade": ">= 0.18.0",
-    "less": ">= 1.1.5",
-    "socket.io": ">= 0.8.7",
-    "connect": ">=1.8.5",
-    "recaptcha": ">=1.1.0",
+  "dependencies": {
+    "node-uuid": "1.3.3",
+    "everyauth": "0.2.29",
+    "nconf": "0.5.1",
+    "express": "2.5.0",
+    "jade": "0.18.0",
+    "less": "1.1.5",
+    "socket.io": "0.8.7",
+    "connect": "1.8.5",
+    "recaptcha": "1.1.0",
     "async": "0.1.15",
     "facebook-client": "1.6.0",
-    "azure": "0.5.3",
-    "mongoose": "2.6.5"
+    "azure": "0.6.5",
+    "mongoose": "~2.6.5"
   },
   "noAnalyze": true,
   "license": "Apache",
